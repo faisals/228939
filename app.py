@@ -3,7 +3,7 @@ from database import initialize_database
 from problem_manager import ProblemManager
 from config import DATABASE_FILE, OPENAI_API_KEY, OPENAI_MODEL  
 from openai import OpenAI
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import subprocess
 import tempfile
 import markdown
@@ -33,7 +33,40 @@ app.jinja_env.filters['markdown'] = markdown_filter
 @app.route('/')
 def index():
     problems = problem_manager.get_all_problems_with_details()
-    return render_template('index.html', problems=problems)
+    
+    # Debug: Log the structure of the first problem (if available)
+    if problems:
+        logging.debug(f"Problem structure: {problems[0]}")
+    else:
+        logging.debug("No problems found in the database.")
+
+    # Fetch progress data
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=7)  # Last 7 days
+    daily_progress = problem_manager.get_daily_progress(start_date.isoformat(), end_date.isoformat())
+    
+    # Calculate overall statistics
+    total_problems = len(problems)
+    
+    # Safely calculate completed problems
+    completed_problems = 0
+    for problem in problems:
+        try:
+            if len(problem) > 5 and problem[5] == 'Completed':
+                completed_problems += 1
+        except IndexError:
+            logging.error(f"Unexpected problem structure: {problem}")
+    
+    total_worked = sum(day[2] for day in daily_progress) if daily_progress else 0
+    total_completed = sum(day[3] for day in daily_progress) if daily_progress else 0
+    
+    return render_template('index.html', 
+                           problems=problems, 
+                           daily_progress=daily_progress,
+                           total_problems=total_problems,
+                           completed_problems=completed_problems,
+                           total_worked=total_worked,
+                           total_completed=total_completed)
 
 @app.route('/add_problem', methods=['GET', 'POST'])
 def add_problem():
@@ -52,16 +85,6 @@ def add_problem():
     
     return render_template('add_problem.html')
 
-""" @app.route('/problem/<int:problem_id>')
-def problem_details(problem_id):
-    problem = problem_manager.get_problem(problem_id)
-    if problem:
-        hints = problem_manager.get_hints(problem_id)
-        conversations = problem_manager.get_conversations(problem_id)
-        return render_template('problem_details.html', problem=problem, hints=hints, conversations=conversations)
-    else:
-        flash('Problem not found.', 'error')
-        return redirect(url_for('index')) """
 
 @app.route('/problem/<int:problem_id>')
 def problem_details(problem_id):
@@ -75,17 +98,7 @@ def problem_details(problem_id):
         flash('Problem not found.', 'error')
         return redirect(url_for('index'))
 
-@app.route('/update_status/<int:problem_id>', methods=['POST'])
-def update_status(problem_id):
-    new_status = request.form['status']
-    success = problem_manager.update_problem_status(problem_id, new_status)
-    if success:
-        # Record the attempt with the current timestamp
-        problem_manager.update_last_attempt(problem_id)
-        flash('Problem status updated successfully!', 'success')
-    else:
-        flash('Failed to update problem status.', 'error')
-    return redirect(url_for('problem_details', problem_id=problem_id))
+
 
 @app.route('/run_code/<int:problem_id>', methods=['POST'])
 def run_code(problem_id):
@@ -125,6 +138,28 @@ def get_hint(problem_id):
         return jsonify({'hint': html_hint})
     else:
         return jsonify({'error': 'Problem not found'}), 404
+
+@app.route('/update_status/<int:problem_id>', methods=['POST'])
+def update_status(problem_id):
+    new_status = request.form['status']
+    success = problem_manager.update_problem_status(problem_id, new_status)
+    if success:
+        # Record the attempt with the current timestamp
+        problem_manager.update_last_attempt(problem_id)
+        # Update daily progress
+        problem_manager.update_daily_progress(problem_id, new_status == 'Completed')
+        flash('Problem status updated successfully!', 'success')
+    else:
+        flash('Failed to update problem status.', 'error')
+    return redirect(url_for('problem_details', problem_id=problem_id))
+
+@app.route('/progress')
+def progress():
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=30)  # Show last 30 days by default
+    daily_progress = problem_manager.get_daily_progress(start_date.isoformat(), end_date.isoformat())
+    return render_template('progress.html', daily_progress=daily_progress)
+
 
 @app.route('/get_code_hint/<int:problem_id>')
 def get_code_hint(problem_id):

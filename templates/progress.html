@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold my-4">Progress Tracker</h1>
+    
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="text-xl font-bold mb-4">Daily Progress (Last 30 Days)</h2>
+        {% if daily_progress %}
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b text-left">Date</th>
+                        <th class="py-2 px-4 border-b text-left">Problems Worked</th>
+                        <th class="py-2 px-4 border-b text-left">Problems Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for progress in daily_progress %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-2 px-4 border-b">{{ progress[1] }}</td>
+                        <td class="py-2 px-4 border-b">{{ progress[2] }}</td>
+                        <td class="py-2 px-4 border-b">{{ progress[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No progress data available yet. Start solving problems to see your progress!</p>
+        {% endif %}
+    </div>
+    
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="text-xl font-bold mb-4">Overall Statistics</h2>
+        {% if daily_progress %}
+            <p>Total Problems Worked: {{ daily_progress|sum(attribute='2') }}</p>
+            <p>Total Problems Completed: {{ daily_progress|sum(attribute='3') }}</p>
+            <p>Average Problems per Day: {{ (daily_progress|sum(attribute='2') / daily_progress|length)|round(2) if daily_progress|length > 0 else 0 }}</p>
+        {% else %}
+            <p>No statistics available yet. Start solving problems to generate statistics!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

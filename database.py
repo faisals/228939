@@ -39,6 +39,15 @@ def create_tables(conn):
                 FOREIGN KEY (problem_id) REFERENCES problems (id)
             )
         ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS daily_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date DATE UNIQUE,
+                problems_worked INTEGER DEFAULT 0,
+                problems_completed INTEGER DEFAULT 0
+            )
+        ''')
         
         # Check if attempt_type column exists, if not, add it
         cursor.execute("PRAGMA table_info(attempts)")

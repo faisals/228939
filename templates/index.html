@@ -1,123 +1,98 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mx-auto px-4">
-    <h1 class="text-2xl font-bold my-4">LeetCoder Problems</h1>
-    <!-- Existing Problems Table -->
-    <div class="overflow-x-auto">
-        <table id="problemTable" class="min-w-full bg-white">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(0)">ID</th>
-                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(1)">Title</th>
-                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(2)">Difficulty</th>
-                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(3)">Status</th>
-                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(4)">Last Attempt</th>
-                    <th class="py-2 px-4 border-b text-left">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for problem in problems %}
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 px-4 border-b">{{ problem[0] }}</td>
-                    <td class="py-2 px-4 border-b"><a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">{{ problem[1] }}</a></td>
-                    <td class="py-2 px-4 border-b">
-                        <span class="
-                            {% if problem[2] == 'Easy' %}
-                                text-green-500
-                            {% elif problem[2] == 'Medium' %}
-                                text-yellow-500
-                            {% else %}
-                                text-red-500
-                            {% endif %}
-                        ">{{ problem[2] }}</span>
-                    </td>
-                    <td class="py-2 px-4 border-b">{{ problem[3] }}</td>
-                    <td class="py-2 px-4 border-b">{{ problem[4] | format_date }}</td>
-                    <td class="py-2 px-4 border-b">
-                        <a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">View</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="container mx-auto p-8">
+    <h1 class="text-4xl font-extrabold mb-8 text-center text-blue-600">LeetCoder Dashboard</h1>
+    
+    <div class="flex flex-wrap -mx-4">
+        <!-- Problems List Column -->
+        <div class="w-full lg:w-2/3 px-4 mb-8 lg:mb-0">
+            <div class="bg-white shadow-lg rounded-lg p-8">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">LeetCoder Problems</h2>
+
+                <!-- Problems Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead class="bg-blue-100">
+                            <tr>
+                                <th class="py-3 px-4 border-b text-left">Title</th>
+                                <th class="py-3 px-4 border-b text-left">Difficulty</th>
+                                <th class="py-3 px-4 border-b text-left">Status</th>
+                                <th class="py-3 px-4 border-b text-left">Last Attempt</th>
+                                <th class="py-3 px-4 border-b text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for problem in problems %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-3 px-4 border-b"><a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">{{ problem[2] }}</a></td>
+                                <td class="py-3 px-4 border-b">
+                                    <span class="
+                                        {% if problem[3] == 'Easy' %}
+                                            text-green-500
+                                        {% elif problem[3] == 'Medium' %}
+                                            text-yellow-500
+                                        {% else %}
+                                            text-red-500
+                                        {% endif %}
+                                    ">{{ problem[3] }}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b">{{ problem[5] }}</td>
+                                <td class="py-3 px-4 border-b">{{ problem[4] | format_date }}</td>
+                                <td class="py-3 px-4 border-b">
+                                    <a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Summary Column -->
+        <div class="w-full lg:w-1/3 px-4">
+            <div class="bg-white shadow-lg rounded-lg p-8">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">Progress Summary</h2>
+                
+                <!-- Overall Statistics -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium mb-4">Overall Statistics</h3>
+                    <p class="mb-2">Total Problems: <span class="font-semibold">{{ total_problems }}</span></p>
+                    <p class="mb-2">Completed Problems: <span class="font-semibold">{{ completed_problems }}</span></p>
+                    <p>Completion Rate: <span class="font-semibold">{{ (completed_problems / total_problems * 100) | round(2) }}%</span></p>
+                </div>
+
+                <!-- Weekly Progress -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium mb-4">This Week's Progress</h3>
+                    <p class="mb-2">Problems Worked On: <span class="font-semibold">{{ total_worked }}</span></p>
+                    <p>Problems Completed: <span class="font-semibold">{{ total_completed }}</span></p>
+                </div>
+
+                <!-- Daily Progress Chart (placeholder) -->
+                <div>
+                    <h3 class="text-lg font-medium mb-4">Daily Progress (Last 7 Days)</h3>
+                    <!-- You could add a simple bar chart here using CSS or a JavaScript charting library -->
+                    <div class="flex items-end space-x-2 h-40">
+                        {% for day in daily_progress %}
+                        <div class="bg-blue-500 w-10" style="height: {{ day[2] * 10 }}%;" title="{{ day[2] }} problems">{{ day[2] }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-        
     <!-- Quick Add Form -->
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="text-xl font-bold mb-4">Quick Add Problem</h2>
-        <form id="quickAddForm" method="POST" action="{{ url_for('quick_add_problem') }}" class="flex items-center">
+    <div class="mt-8">
+        <form id="quickAddForm" method="POST" action="{{ url_for('quick_add_problem') }}" class="bg-white shadow-lg rounded-lg p-8">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Quick Add Problem</h2>
             <input type="text" name="url" placeholder="Enter LeetCode problem URL" required
-                   class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                Quick Add
+                   class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">
+                Add Problem
             </button>
         </form>
     </div>
 </div>
-
-
-<script>
-    document.getElementById('quickAddForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const url = this.elements.url.value;
-        fetch("{{ url_for('quick_add_problem') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({'url': url})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Problem added successfully!');
-                location.reload();
-            } else {
-                alert('Failed to add problem: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while adding the problem.');
-        });
-    });
-
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("problemTable");
-        switching = true;
-        dir = "asc";
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            for (i = 1; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount++;
-            } else {
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-</script>
 {% endblock %}

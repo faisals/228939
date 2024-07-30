@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from datetime import datetime
+from datetime import datetime, date
 import logging
 
 
@@ -16,6 +16,56 @@ class ProblemManager:
         except Error as e:
             print(f"Error connecting to database: {e}")
         return conn
+    
+    def update_daily_progress(self, problem_id, is_completed):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                today = date.today().isoformat()
+                
+                # Check if there's an entry for today
+                cursor.execute('SELECT * FROM daily_progress WHERE date = ?', (today,))
+                entry = cursor.fetchone()
+                
+                if entry:
+                    # Update existing entry
+                    if is_completed:
+                        cursor.execute('UPDATE daily_progress SET problems_worked = problems_worked + 1, problems_completed = problems_completed + 1 WHERE date = ?', (today,))
+                    else:
+                        cursor.execute('UPDATE daily_progress SET problems_worked = problems_worked + 1 WHERE date = ?', (today,))
+                else:
+                    # Create new entry
+                    if is_completed:
+                        cursor.execute('INSERT INTO daily_progress (date, problems_worked, problems_completed) VALUES (?, 1, 1)', (today,))
+                    else:
+                        cursor.execute('INSERT INTO daily_progress (date, problems_worked, problems_completed) VALUES (?, 1, 0)', (today,))
+                
+                conn.commit()
+                print(f"Daily progress updated for {today}")
+                return True
+            except Error as e:
+                print(f"Error updating daily progress: {e}")
+                return False
+            finally:
+                conn.close()
+        return False
+
+    def get_daily_progress(self, start_date=None, end_date=None):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                if start_date and end_date:
+                    cursor.execute('SELECT * FROM daily_progress WHERE date BETWEEN ? AND ? ORDER BY date', (start_date, end_date))
+                else:
+                    cursor.execute('SELECT * FROM daily_progress ORDER BY date')
+                return cursor.fetchall()
+            except Error as e:
+                print(f"Error retrieving daily progress: {e}")
+            finally:
+                conn.close()
+        return []
     
     def update_last_attempt(self, problem_id):
         conn = self.create_connection()
@@ -198,7 +248,7 @@ class ProblemManager:
             try:
                 cursor = conn.cursor()
                 cursor.execute('''
-                    SELECT p.id, p.title, p.difficulty, p.completion_status, 
+                    SELECT p.id, p.url, p.title, p.difficulty, p.completion_status, 
                            MAX(a.timestamp) as last_attempt
                     FROM problems p
                     LEFT JOIN attempts a ON p.id = a.problem_id
@@ -206,9 +256,12 @@ class ProblemManager:
                     ORDER BY last_attempt DESC NULLS LAST, p.id DESC
                 ''')
                 problems = cursor.fetchall()
+                logging.debug(f"Fetched {len(problems)} problems")
+                if problems:
+                    logging.debug(f"Sample problem data: {problems[0]}")
                 return problems
             except Error as e:
-                print(f"Error retrieving all problems with details: {e}")
+                logging.error(f"Error retrieving all problems with details: {e}")
             finally:
                 conn.close()
         return []
