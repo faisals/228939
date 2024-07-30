@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 
 def create_connection():
-    conn = None;
+    conn = None
     try:
         conn = sqlite3.connect('leetcoder.db')
         print(f"Successfully connected to SQLite. SQLite version: {sqlite3.version}")
@@ -27,31 +27,53 @@ def create_tables(conn):
             )
         ''')
         
-        # Create Attempts table with attempt_type column
+        # Create or update Attempts table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS attempts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 problem_id INTEGER,
+                attempt_type TEXT,
                 code TEXT,
                 result TEXT,
-                attempt_type TEXT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (problem_id) REFERENCES problems (id)
             )
         ''')
         
-        # Create UserProgress table
+        # Check if attempt_type column exists, if not, add it
+        cursor.execute("PRAGMA table_info(attempts)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if 'attempt_type' not in columns:
+            cursor.execute('ALTER TABLE attempts ADD COLUMN attempt_type TEXT')
+        
+        # Create Hints table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_progress (
-                topic TEXT PRIMARY KEY,
-                proficiency_level INTEGER
+            CREATE TABLE IF NOT EXISTS hints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                problem_id INTEGER,
+                hint_type TEXT,
+                content TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (problem_id) REFERENCES problems (id)
+            )
+        ''')
+        
+        # Create Conversations table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                problem_id INTEGER,
+                user_message TEXT,
+                ai_response TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (problem_id) REFERENCES problems (id)
             )
         ''')
         
         conn.commit()
-        print("Tables created successfully")
+        print("Tables created or updated successfully")
     except Error as e:
-        print(f"Error creating tables: {e}")
+        print(f"Error creating or updating tables: {e}")
 
 def initialize_database():
     conn = create_connection()

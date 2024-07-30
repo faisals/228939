@@ -1,207 +1,227 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mx-auto px-4">
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h1 class="text-2xl font-bold mb-4">{{ problem[2] }}</h1>
-        <div class="mb-4">
-            <span class="font-bold">Difficulty:</span> 
-            <span class="
-                {% if problem[3] == 'Easy' %}
-                    text-green-500
-                {% elif problem[3] == 'Medium' %}
-                    text-yellow-500
-                {% else %}
-                    text-red-500
-                {% endif %}
-            ">{{ problem[3] }}</span>
-        </div>
-        <div class="mb-4">
-            <span class="font-bold">Status:</span> {{ problem[5] }}
-        </div>
-        <div class="mb-4">
-            <span class="font-bold">Description:</span>
-            <p class="mt-2">{{ problem[4] | safe }}</p>
-        </div>
-        <a href="{{ problem[1] }}" target="_blank" class="text-blue-500 hover:underline">View on LeetCode</a>
-    </div>
+    <div class="flex flex-wrap -mx-4">
+        <!-- Problem Details and Status Section -->
+        <div class="w-full lg:w-1/2 px-4 mb-8">
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h1 class="text-2xl font-bold mb-4">{{ problem[2] }}</h1>
+                <div class="mb-4">
+                    <span class="font-bold">Difficulty:</span> 
+                    <span class="
+                        {% if problem[3] == 'Easy' %}
+                            text-green-500
+                        {% elif problem[3] == 'Medium' %}
+                            text-yellow-500
+                        {% else %}
+                            text-red-500
+                        {% endif %}
+                    ">{{ problem[3] }}</span>
+                </div>
+                <div class="mb-4">
+                    <span class="font-bold">Status:</span> {{ problem[5] }}
+                </div>
+                <div class="mb-4">
+                    <span class="font-bold">Description:</span>
+                    <p class="mt-2">{{ problem[4] | safe }}</p>
+                </div>
+                <a href="{{ problem[1] }}" target="_blank" class="text-blue-500 hover:underline">View on LeetCode</a>
 
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="text-xl font-bold mb-4">Your Solution</h2>
-        <div id="editor" class="mb-4" style="height: 300px; border: 1px solid #ddd;"></div>
-        <button id="runCode" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
-            Run Code
-        </button>
-        <button id="submitSolution" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Submit Solution
-        </button>
-        <div id="output" class="mt-4 p-4 bg-gray-100 rounded" style="white-space: pre-wrap;"></div>
-    </div>
-
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="text-xl font-bold mb-4">AI Hint</h2>
-        <button id="getHint" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-            Get Hint
-        </button>
-        <div id="hintArea" class="mt-4">
-            <div id="hintText" class="mb-4"></div>
-            <div id="chatArea" class="hidden">
-                <input type="text" id="userMessage" placeholder="Ask a follow-up question..." class="w-full p-2 border rounded">
-                <button id="sendMessage" class="mt-2 bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-                    Send
-                </button>
+                <div class="mt-8">
+                    <h2 class="text-xl font-bold mb-4">Update Status</h2>
+                    <form method="POST" action="{{ url_for('update_status', problem_id=problem[0]) }}">
+                        <select name="status" class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="Not Started" {% if problem[5] == 'Not Started' %}selected{% endif %}>Not Started</option>
+                            <option value="In Progress" {% if problem[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if problem[5] == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                        <button type="submit" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            Update Status
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="text-xl font-bold mb-4">AI Code Hint</h2>
-        <button id="getCodeHint" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-            Get Code Hint
-        </button>
-        <div id="codeHintArea" class="mt-4">
-            <div id="codeHintText" class="mb-4"></div>
-            <div id="codeChatArea" class="hidden">
-                <input type="text" id="codeUserMessage" placeholder="Ask about the code hint..." class="w-full p-2 border rounded">
-                <button id="sendCodeMessage" class="mt-2 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                    Send
+        <!-- Workspace and Additional Features Section -->
+        <div class="w-full lg:w-1/2 px-4">
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">Your Solution</h2>
+                <div id="editor" class="mb-4" style="height: 300px; border: 1px solid #ddd;"></div>
+                <button id="runCode" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    Run Code
                 </button>
+                <button id="submitSolution" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Submit Solution
+                </button>
+                <div id="output" class="mt-4 p-4 bg-gray-100 rounded" style="white-space: pre-wrap;"></div>
             </div>
-        </div>
-    </div>
 
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 class="text-xl font-bold mb-4">Update Status</h2>
-        <form method="POST" action="{{ url_for('update_status', problem_id=problem[0]) }}">
-            <select name="status" class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
-                <option value="Not Started" {% if problem[5] == 'Not Started' %}selected{% endif %}>Not Started</option>
-                <option value="In Progress" {% if problem[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
-                <option value="Completed" {% if problem[5] == 'Completed' %}selected{% endif %}>Completed</option>
-            </select>
-            <button type="submit" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                Update Status
-            </button>
-        </form>
-    </div>
-
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h1 class="text-2xl font-bold mb-4">{{ problem[2] }}</h1>
-        <!-- ... (other problem details remain the same) -->
-        <div class="mt-4">
-            <form id="deleteForm" action="{{ url_for('delete_problem', problem_id=problem[0]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this problem? This action cannot be undone.');">
-                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Delete Problem
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">AI Hint</h2>
+                <button id="getHint" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                    Get Hint
                 </button>
-            </form>
+                <div id="hintArea" class="mt-4">
+                    <div id="hintText" class="mb-4"></div>
+                    <div id="chatArea" class="hidden">
+                        <input type="text" id="userMessage" placeholder="Ask a follow-up question..." class="w-full p-2 border rounded">
+                        <button id="sendMessage" class="mt-2 bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">AI Code Hint</h2>
+                <button id="getCodeHint" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                    Get Code Hint
+                </button>
+                <div id="codeHintArea" class="mt-4">
+                    <div id="codeHintText" class="mb-4"></div>
+                    <div id="codeChatArea" class="hidden">
+                        <input type="text" id="codeUserMessage" placeholder="Ask about the code hint..." class="w-full p-2 border rounded">
+                        <button id="sendCodeMessage" class="mt-2 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">Hint History</h2>
+                {% for hint in hints %}
+                <div class="mb-4 p-4 bg-gray-100 rounded">
+                  <p><strong>Type:</strong> {{ hint[0] }}</p>
+                  <p><strong>Timestamp:</strong> {{ hint[2] }}</p>
+                  <div class="mt-2">{{ hint[1] | markdown | safe }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            
+              <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">Conversation History</h2>
+                {% for conversation in conversations %}
+                <div class="mb-4 p-4 bg-gray-100 rounded">
+                  <p><strong>User:</strong> {{ conversation[0] }}</p>
+                  <div><strong>AI:</strong> {{ conversation[1] | markdown | safe }}</div>
+                  <p><strong>Timestamp:</strong> {{ conversation[2] }}</p>
+                </div>
+                {% endfor %}
+              </div>
+
+            <!-- You can add Hint History and Conversation History sections here if needed -->
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.min.js"></script>
 <script>
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
-    require(["vs/editor/editor.main"], function() {
-        var editor = monaco.editor.create(document.getElementById('editor'), {
-            value: '# Write your solution here\n',
-            language: 'python',
-            theme: 'vs-dark'
-        });
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
+  require(["vs/editor/editor.main"], function() {
+      var editor = monaco.editor.create(document.getElementById('editor'), {
+          value: '# Write your solution here\n',
+          language: 'python',
+          theme: 'vs-dark'
+      });
 
-        document.getElementById('runCode').addEventListener('click', function() {
-            var code = editor.getValue();
-            fetch('/run_code/{{ problem[0] }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({code: code}),
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('output').textContent = data.output;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        });
+      document.getElementById('runCode').addEventListener('click', function() {
+          var code = editor.getValue();
+          fetch('/run_code/{{ problem[0] }}', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({code: code}),
+          })
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('output').textContent = data.output;
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+      });
 
-        document.getElementById('submitSolution').addEventListener('click', function() {
-            var code = editor.getValue();
-            // Here you would typically send the code to the server for evaluation
-            console.log("Submitted code:", code);
-            alert("Solution submitted! (This is a placeholder - actual submission not implemented yet)");
-        });
-    });
+      document.getElementById('submitSolution').addEventListener('click', function() {
+          var code = editor.getValue();
+          // Here you would typically send the code to the server for evaluation
+          console.log("Submitted code:", code);
+          alert("Solution submitted! (This is a placeholder - actual submission not implemented yet)");
+      });
+  });
 
-    document.getElementById('getHint').addEventListener('click', function() {
-        fetch('/get_hint/{{ problem[0] }}')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('hintText').innerHTML = data.hint;
-                document.getElementById('chatArea').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('hintText').textContent = 'Failed to get hint. Please try again.';
-            });
-    });
+  document.getElementById('getHint').addEventListener('click', function() {
+      fetch('/get_hint/{{ problem[0] }}')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('hintText').innerHTML = data.hint;
+              document.getElementById('chatArea').classList.remove('hidden');
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              document.getElementById('hintText').textContent = 'Failed to get hint. Please try again.';
+          });
+  });
 
-    document.getElementById('sendMessage').addEventListener('click', function() {
-        var message = document.getElementById('userMessage').value;
-        fetch('/chat_with_ai', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                problem_id: {{ problem[0] }},
-                message: message,
-                hint_type: 'general'
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('hintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
-            document.getElementById('userMessage').value = '';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
+  document.getElementById('sendMessage').addEventListener('click', function() {
+      var message = document.getElementById('userMessage').value;
+      fetch('/chat_with_ai', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              problem_id: {{ problem[0] }},
+              message: message,
+              hint_type: 'general'
+          }),
+      })
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('hintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
+          document.getElementById('userMessage').value = '';
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  });
 
-    document.getElementById('getCodeHint').addEventListener('click', function() {
-        fetch('/get_code_hint/{{ problem[0] }}')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('codeHintText').innerHTML = data.hint;
-                document.getElementById('codeChatArea').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('codeHintText').textContent = 'Failed to get code hint. Please try again.';
-            });
-    });
+  document.getElementById('getCodeHint').addEventListener('click', function() {
+      fetch('/get_code_hint/{{ problem[0] }}')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('codeHintText').innerHTML = data.hint;
+              document.getElementById('codeChatArea').classList.remove('hidden');
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              document.getElementById('codeHintText').textContent = 'Failed to get code hint. Please try again.';
+          });
+  });
 
-    document.getElementById('sendCodeMessage').addEventListener('click', function() {
-        var message = document.getElementById('codeUserMessage').value;
-        fetch('/chat_with_ai', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                problem_id: {{ problem[0] }},
-                message: message,
-                hint_type: 'code'
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('codeHintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
-            document.getElementById('codeUserMessage').value = '';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
+  document.getElementById('sendCodeMessage').addEventListener('click', function() {
+      var message = document.getElementById('codeUserMessage').value;
+      fetch('/chat_with_ai', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              problem_id: {{ problem[0] }},
+              message: message,
+              hint_type: 'code'
+          }),
+      })
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('codeHintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
+          document.getElementById('codeUserMessage').value = '';
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  });
 </script>
 {% endblock %}

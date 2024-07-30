@@ -10,6 +10,7 @@ LeetCoder is a Flask-based web application designed to help users manage, practi
 - **AI-Powered Hints**: Get helpful hints using OpenAI's GPT model
 - **Code Editor**: Write and run Python code directly in the application
 - **Problem Details**: View comprehensive problem information including difficulty and description
+- **Blind 75 Database**: Option to start with a pre-populated database of Blind 75 problems
 
 ## Prerequisites
 
@@ -42,10 +43,15 @@ LeetCoder is a Flask-based web application designed to help users manage, practi
    DATABASE_FILE = 'leetcoder.db'
    ```
 
-5. Initialize the database:
-   ```
-   python database.py
-   ```
+5. Database setup:
+   - For a fresh start, initialize the database:
+     ```
+     python database.py
+     ```
+   - To use the Blind 75 database backup:
+     - Navigate to the `_databasebackup` directory
+     - Rename `leetcoder.ab` to `leetcoder.db`
+     - Move `leetcoder.db` to the project root directory
 
 6. Run the application:
    ```
@@ -53,6 +59,18 @@ LeetCoder is a Flask-based web application designed to help users manage, practi
    ```
 
 7. Open a web browser and navigate to `http://localhost:5000`
+
+## Blind 75 Database Backup
+
+We've provided a database backup that includes the Blind 75 LeetCode problems. This can serve as a starting point for users who want to focus on these commonly asked interview questions.
+
+To use this backup:
+1. Navigate to the `_databasebackup` directory in the project.
+2. Find the file named `leetcoder.ab`.
+3. Rename this file to `leetcoder.db`.
+4. Move `leetcoder.db` to the project root directory.
+
+This pre-populated database will give you immediate access to all Blind 75 problems within the LeetCoder interface.
 
 ## Usage
 

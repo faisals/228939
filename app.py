@@ -9,6 +9,8 @@ import tempfile
 import markdown
 import requests
 import re
+import logging
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # needed for flashing messages
@@ -17,6 +19,16 @@ initialize_database()
 problem_manager = ProblemManager(DATABASE_FILE)
 
 client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Add this function to create a markdown filter
+def markdown_filter(text):
+    return markdown.markdown(text, extensions=['fenced_code', 'codehilite'])
+
+# Register the markdown filter with the Jinja environment
+app.jinja_env.filters['markdown'] = markdown_filter
 
 @app.route('/')
 def index():
@@ -40,11 +52,25 @@ def add_problem():
     
     return render_template('add_problem.html')
 
+""" @app.route('/problem/<int:problem_id>')
+def problem_details(problem_id):
+    problem = problem_manager.get_problem(problem_id)
+    if problem:
+        hints = problem_manager.get_hints(problem_id)
+        conversations = problem_manager.get_conversations(problem_id)
+        return render_template('problem_details.html', problem=problem, hints=hints, conversations=conversations)
+    else:
+        flash('Problem not found.', 'error')
+        return redirect(url_for('index')) """
+
 @app.route('/problem/<int:problem_id>')
 def problem_details(problem_id):
     problem = problem_manager.get_problem(problem_id)
     if problem:
-        return render_template('problem_details.html', problem=problem)
+        hints = problem_manager.get_hints(problem_id)
+        conversations = problem_manager.get_conversations(problem_id)
+        recent_attempts = problem_manager.check_attempts(problem_id)
+        return render_template('problem_details.html', problem=problem, hints=hints, conversations=conversations, recent_attempts=recent_attempts)
     else:
         flash('Problem not found.', 'error')
         return redirect(url_for('index'))
@@ -54,6 +80,8 @@ def update_status(problem_id):
     new_status = request.form['status']
     success = problem_manager.update_problem_status(problem_id, new_status)
     if success:
+        # Record the attempt with the current timestamp
+        problem_manager.update_last_attempt(problem_id)
         flash('Problem status updated successfully!', 'success')
     else:
         flash('Failed to update problem status.', 'error')
@@ -70,6 +98,7 @@ def run_code(problem_id):
         result = subprocess.run(['python', temp_file_path], capture_output=True, text=True, timeout=5)
         output = result.stdout if result.returncode == 0 else result.stderr
         problem_manager.record_attempt(problem_id, 'run_code', code, output)
+        problem_manager.update_last_attempt(problem_id)  # Update last attempt
     except subprocess.TimeoutExpired:
         output = "Execution timed out after 5 seconds."
     except Exception as e:
@@ -81,17 +110,18 @@ def run_code(problem_id):
 def get_hint(problem_id):
     problem = problem_manager.get_problem(problem_id)
     if problem:
-        prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a general hint to solve this problem without giving any code or specific algorithm steps. Focus on problem-solving strategies and key concepts to consider."
+        prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a general hint to solve this problem without giving any code or specific algorithm steps. Focus on problem-solving strategies and key concepts to consider. Format your response using markdown."
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system",   "content": "You are a thoughtful and insightful coding companion specializing in Python. Your goal is to help users develop their problem-solving skills by providing helpful hints and guidance on how to approach coding challenges. Encourage critical thinking and guide users through the process of breaking down problems, understanding concepts, and finding solutions on their own. Offer tips on best practices, common pitfalls, and efficient coding strategies. Your responses should be supportive, patient, and aimed at fostering a deeper understanding of Python programming. Remember to ask clarifying questions to better understand the user's needs and tailor your hints to their specific context."},
+                {"role": "system", "content": "You are a helpful coding assistant providing general hints."},
                 {"role": "user", "content": prompt}
             ]
         )
         hint = response.choices[0].message.content.strip()
         html_hint = markdown.markdown(hint)
-        problem_manager.record_attempt(problem_id, 'get_hint', result=hint)
+        problem_manager.add_hint(problem_id, 'general', hint)
+        problem_manager.update_last_attempt(problem_id)  # Update last attempt
         return jsonify({'hint': html_hint})
     else:
         return jsonify({'error': 'Problem not found'}), 404
@@ -100,17 +130,18 @@ def get_hint(problem_id):
 def get_code_hint(problem_id):
     problem = problem_manager.get_problem(problem_id)
     if problem:
-        prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a code hint to solve this problem. Include a small code snippet or pseudo-code that demonstrates a key part of the solution without giving away the entire implementation."
+        prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a code hint to solve this problem. Include a small code snippet or pseudo-code that demonstrates a key part of the solution without giving away the entire implementation. Format your response using markdown, and ensure code blocks are properly formatted."
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a highly skilled coding assistant specializing in Python. Your goal is to provide detailed, accurate, and contextually relevant help to users working on Python projects. This includes offering code snippets, debugging assistance, explanations of Python concepts, optimization tips, best practices, and any other form of support that enhances the user's coding experience. Be proactive in asking clarifying questions to better understand the user's needs and always aim to improve the code's efficiency and readability. Your responses should be thorough, easy to understand, and tailored to the user's specific project requirements. Remember to be patient, encouraging, and provide constructive feedback."},
+                {"role": "system", "content": "You are a helpful coding assistant providing code hints."},
                 {"role": "user", "content": prompt}
             ]
         )
         hint = response.choices[0].message.content.strip()
         html_hint = markdown.markdown(hint, extensions=['fenced_code', 'codehilite'])
-        problem_manager.record_attempt(problem_id, 'get_code_hint', result=hint)
+        problem_manager.add_hint(problem_id, 'code', hint)
+        problem_manager.update_last_attempt(problem_id)  # Update last attempt
         return jsonify({'hint': html_hint})
     else:
         return jsonify({'error': 'Problem not found'}), 404
@@ -125,14 +156,14 @@ def chat_with_ai():
 
     if problem:
         if hint_type == 'code':
-            system_message = "You are a helpful coding assistant providing code-related hints and explanations."
+            system_message = "You are a helpful coding assistant providing code-related hints and explanations. Format your responses using markdown, and ensure code blocks are properly formatted."
             prompt = f"Context: LeetCode problem '{problem[2]}'\nDescription: {problem[4]}\n\nUser is asking about code hints. Provide code-related explanations or snippets as appropriate.\n\nUser: {user_message}\n\nAI:"
         else:
-            system_message = "You are a helpful coding assistant providing general problem-solving hints and strategies."
+            system_message = "You are a helpful coding assistant providing general problem-solving hints and strategies. Format your responses using markdown."
             prompt = f"Context: LeetCode problem '{problem[2]}'\nDescription: {problem[4]}\n\nUser is asking for general hints. Avoid giving specific code solutions.\n\nUser: {user_message}\n\nAI:"
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
@@ -140,6 +171,7 @@ def chat_with_ai():
         )
         ai_response = response.choices[0].message.content.strip()
         html_response = markdown.markdown(ai_response, extensions=['fenced_code', 'codehilite'])
+        problem_manager.add_conversation(problem_id, user_message, ai_response)
         return jsonify({'response': html_response})
     else:
         return jsonify({'error': 'Problem not found'}), 404
@@ -261,9 +293,12 @@ def quick_add_problem():
 
 @app.template_filter('format_date')
 def format_date(value):
-    if value:
-        return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M')
-    return 'Never'
+    if value and isinstance(value, str):
+        try:
+            return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M')
+        except ValueError:
+            return value  # Return the original value if it's not a valid date string
+    return value if value else 'N/A'
 
 app.jinja_env.filters['format_date'] = format_date
 

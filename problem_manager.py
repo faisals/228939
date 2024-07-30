@@ -1,6 +1,8 @@
 import sqlite3
 from sqlite3 import Error
 from datetime import datetime
+import logging
+
 
 class ProblemManager:
     def __init__(self, db_file):
@@ -14,6 +16,80 @@ class ProblemManager:
         except Error as e:
             print(f"Error connecting to database: {e}")
         return conn
+    
+    def update_last_attempt(self, problem_id):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute('''
+                    INSERT INTO attempts (problem_id, attempt_type, timestamp)
+                    VALUES (?, ?, ?)
+                ''', (problem_id, 'interaction', current_time))
+                conn.commit()
+                logging.info(f"Last attempt updated for problem {problem_id}")
+                return True
+            except Error as e:
+                logging.error(f"Error updating last attempt for problem {problem_id}: {e}")
+                return False
+            finally:
+                conn.close()
+        else:
+            logging.error(f"Failed to create database connection for problem {problem_id}")
+        return False
+    
+    def add_hint(self, problem_id, hint_type, content):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO hints (problem_id, hint_type, content)
+                    VALUES (?, ?, ?)
+                ''', (problem_id, hint_type, content))
+                conn.commit()
+                return cursor.lastrowid
+            except Error as e:
+                print(f"Error adding hint: {e}")
+            finally:
+                conn.close()
+        return None
+    
+    def add_conversation(self, problem_id, user_message, ai_response):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO conversations (problem_id, user_message, ai_response)
+                    VALUES (?, ?, ?)
+                ''', (problem_id, user_message, ai_response))
+                conn.commit()
+                return cursor.lastrowid
+            except Error as e:
+                print(f"Error adding conversation: {e}")
+            finally:
+                conn.close()
+        return None
+    
+    def get_hints(self, problem_id):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT hint_type, content, timestamp
+                    FROM hints
+                    WHERE problem_id = ?
+                    ORDER BY timestamp DESC
+                ''', (problem_id,))
+                return cursor.fetchall()
+            except Error as e:
+                print(f"Error retrieving hints: {e}")
+            finally:
+                conn.close()
+        return []
     
     def record_attempt(self, problem_id, attempt_type, code=None, result=None):
         conn = self.create_connection()
@@ -56,6 +132,24 @@ class ProblemManager:
         else:
             print("Error! Cannot create the database connection.")
             return None
+        
+    def get_conversations(self, problem_id):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT user_message, ai_response, timestamp
+                    FROM conversations
+                    WHERE problem_id = ?
+                    ORDER BY timestamp ASC
+                ''', (problem_id,))
+                return cursor.fetchall()
+            except Error as e:
+                print(f"Error retrieving conversations: {e}")
+            finally:
+                conn.close()
+        return []
 
     def get_problem(self, problem_id):
         conn = self.create_connection()
@@ -117,8 +211,25 @@ class ProblemManager:
                 print(f"Error retrieving all problems with details: {e}")
             finally:
                 conn.close()
-        else:
-            print("Error! Cannot create the database connection.")
+        return []
+    
+    def check_attempts(self, problem_id):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT * FROM attempts
+                    WHERE problem_id = ?
+                    ORDER BY timestamp DESC
+                    LIMIT 5
+                ''', (problem_id,))
+                attempts = cursor.fetchall()
+                return attempts
+            except Error as e:
+                print(f"Error checking attempts: {e}")
+            finally:
+                conn.close()
         return []
     
     def delete_problem(self, problem_id):
@@ -141,5 +252,3 @@ class ProblemManager:
         else:
             print("Error! Cannot create the database connection.")
             return False
-
-# You can add more methods here as needed
