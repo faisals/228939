@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold my-4">LeetCoder Problems</h1>
+    <!-- Existing Problems Table -->
+    <div class="overflow-x-auto">
+        <table id="problemTable" class="min-w-full bg-white">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(0)">ID</th>
+                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(1)">Title</th>
+                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(2)">Difficulty</th>
+                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(3)">Status</th>
+                    <th class="py-2 px-4 border-b text-left cursor-pointer" onclick="sortTable(4)">Last Attempt</th>
+                    <th class="py-2 px-4 border-b text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for problem in problems %}
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">{{ problem[0] }}</td>
+                    <td class="py-2 px-4 border-b"><a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">{{ problem[1] }}</a></td>
+                    <td class="py-2 px-4 border-b">
+                        <span class="
+                            {% if problem[2] == 'Easy' %}
+                                text-green-500
+                            {% elif problem[2] == 'Medium' %}
+                                text-yellow-500
+                            {% else %}
+                                text-red-500
+                            {% endif %}
+                        ">{{ problem[2] }}</span>
+                    </td>
+                    <td class="py-2 px-4 border-b">{{ problem[3] }}</td>
+                    <td class="py-2 px-4 border-b">{{ problem[4] | format_date }}</td>
+                    <td class="py-2 px-4 border-b">
+                        <a href="{{ url_for('problem_details', problem_id=problem[0]) }}" class="text-blue-500 hover:underline">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+        
+    <!-- Quick Add Form -->
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="text-xl font-bold mb-4">Quick Add Problem</h2>
+        <form id="quickAddForm" method="POST" action="{{ url_for('quick_add_problem') }}" class="flex items-center">
+            <input type="text" name="url" placeholder="Enter LeetCode problem URL" required
+                   class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Quick Add
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('quickAddForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const url = this.elements.url.value;
+        fetch("{{ url_for('quick_add_problem') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({'url': url})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Problem added successfully!');
+                location.reload();
+            } else {
+                alert('Failed to add problem: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the problem.');
+        });
+    });
+
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("problemTable");
+        switching = true;
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

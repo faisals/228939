@@ -1,0 +1,10 @@
+<!-- templates/code_input.html -->
+{% extends "base.html" %}
+{% block content %}
+    <h1>Enter Your Code</h1>
+    <form method="POST" action="{{ url_for('get_problem_explanation', problem_id=problem_id) }}">
+        <textarea name="user_code" rows="10" cols="50"></textarea>
+        <button type="submit">Get Explanation</button>
+    </form>
+{% endblock %}
+

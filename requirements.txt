@@ -1,0 +1,6 @@
+beautifulsoup4
+flask
+jupyter
+markdown
+openai
+requests

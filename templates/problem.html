@@ -1,0 +1,14 @@
+
+<!-- templates/add_problem.html -->
+{% extends "base.html" %}
+{% block content %}
+    <h1>Add New Problem</h1>
+    <form method="POST">
+        <label for="url">Problem URL:</label>
+        <input type="text" id="url" name="url" required>
+        <label for="description">Problem Description:</label>
+        <textarea id="description" name="description" required></textarea>
+        <button type="submit">Add Problem</button>
+    </form>
+{% endblock %}
+

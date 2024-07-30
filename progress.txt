@@ -1,0 +1,8 @@
+touch main.py
+touch database.py
+touch problem_manager.py
+touch ai_assistant.py
+touch web_scraper.py
+touch config.py
+touch requirements.txt
+touch README.md
