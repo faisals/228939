@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from database import initialize_database
 from problem_manager import ProblemManager
-from config import DATABASE_FILE, OPENAI_API_KEY
+from config import DATABASE_FILE, OPENAI_API_KEY, OPENAI_MODEL  
 from openai import OpenAI
 from datetime import datetime
 import subprocess
@@ -112,7 +112,7 @@ def get_hint(problem_id):
     if problem:
         prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a general hint to solve this problem without giving any code or specific algorithm steps. Focus on problem-solving strategies and key concepts to consider. Format your response using markdown."
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": "You are a helpful coding assistant providing general hints."},
                 {"role": "user", "content": prompt}
@@ -132,7 +132,7 @@ def get_code_hint(problem_id):
     if problem:
         prompt = f"Given this LeetCode problem: {problem[2]}\n\nDescription: {problem[4]}\n\nProvide a code hint to solve this problem. Include a small code snippet or pseudo-code that demonstrates a key part of the solution without giving away the entire implementation. Format your response using markdown, and ensure code blocks are properly formatted."
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": "You are a helpful coding assistant providing code hints."},
                 {"role": "user", "content": prompt}
@@ -163,7 +163,7 @@ def chat_with_ai():
             prompt = f"Context: LeetCode problem '{problem[2]}'\nDescription: {problem[4]}\n\nUser is asking for general hints. Avoid giving specific code solutions.\n\nUser: {user_message}\n\nAI:"
 
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
