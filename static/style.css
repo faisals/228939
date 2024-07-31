@@ -57,3 +57,16 @@ button {
 button:hover {
     background-color: #555;
 }
+
+.leetcoder-editor {
+    height: 400px;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+}
+
+.leetcoder-hint {
+    background-color: #f3f4f6;
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
