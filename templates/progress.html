@@ -28,6 +28,14 @@
             <p>No progress data available yet. Start solving problems to see your progress!</p>
         {% endif %}
     </div>
+
+    <!-- Activity Grid -->
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 class="text-xl font-bold mb-4">Activity Grid</h2>
+        <div id="activity-grid" class="overflow-x-auto">
+            <!-- SVG will be inserted here -->
+        </div>
+    </div>
     
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 class="text-xl font-bold mb-4">Overall Statistics</h2>
@@ -40,4 +48,91 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/activity_grid_data')
+            .then(response => response.json())
+            .then(data => createActivityGrid(data));
+    });
+    
+    function createActivityGrid(data) {
+        console.log("Activity Grid Data:", data);
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "600");
+        svg.setAttribute("height", "200");
+        
+        const cellSize = 30;
+        const cellSpacing = 4;
+        const weekLabelWidth = 30;
+        const dayLabelHeight = 30;
+        
+        // Add day labels (columns)
+        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        dayLabels.forEach((label, index) => {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", weekLabelWidth + index * (cellSize + cellSpacing) + cellSize / 2);
+            text.setAttribute("y", dayLabelHeight / 2);
+            text.setAttribute("font-size", "12");
+            text.setAttribute("fill", "#767676");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "central");
+            text.textContent = label;
+            svg.appendChild(text);
+        });
+        
+        // Add week labels (rows)
+        for (let week = 0; week < 4; week++) {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", weekLabelWidth / 2);
+            text.setAttribute("y", dayLabelHeight + week * (cellSize + cellSpacing) + cellSize / 2);
+            text.setAttribute("font-size", "12");
+            text.setAttribute("fill", "#767676");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "central");
+            text.textContent = week + 1;
+            svg.appendChild(text);
+        }
+        
+        // Add activity cells
+        const today = new Date();
+        for (let week = 0; week < 4; week++) {
+            for (let day = 0; day < 7; day++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - (21 - (week * 7 + day)));
+                const dateString = date.toISOString().split('T')[0];
+                
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("width", cellSize);
+                rect.setAttribute("height", cellSize);
+                rect.setAttribute("x", weekLabelWidth + day * (cellSize + cellSpacing));
+                rect.setAttribute("y", dayLabelHeight + week * (cellSize + cellSpacing));
+                
+                const count = data[dateString] || 0;
+                const color = getColor(count);
+                rect.setAttribute("fill", color);
+                
+                // Add title for tooltip
+                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                title.textContent = `${dateString}: ${count} completed`;
+                rect.appendChild(title);
+                
+                svg.appendChild(rect);
+            }
+        }
+        
+        document.getElementById('activity-grid').appendChild(svg);
+    }
+    
+    function getColor(count) {
+    if (count === 0) return "#ebedf0";
+    if (count < 1) return "#f0fff4";  // Very light green for any non-zero value less than 1
+    if (count < 2) return "#9be9a8";
+    if (count < 3) return "#40c463";
+    if (count < 4) return "#30a14e";
+    if (count < 5) return "#216e39";
+    return "#0e4429"; // for count 5 or more
+    }   
+    </script>
+    {% endblock %}

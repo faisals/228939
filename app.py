@@ -68,6 +68,16 @@ def index():
                            total_worked=total_worked,
                            total_completed=total_completed)
 
+@app.route('/activity_grid_data')
+def activity_grid_data():
+    try:
+        data = problem_manager.get_activity_grid_data()
+        print("Sending activity grid data:", data)  # Debug print
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error in activity_grid_data route: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/add_problem', methods=['GET', 'POST'])
 def add_problem():
     if request.method == 'POST':
