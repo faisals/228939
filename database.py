@@ -78,6 +78,17 @@ def create_tables(conn):
                 FOREIGN KEY (problem_id) REFERENCES problems (id)
             )
         ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS submitted_solutions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                problem_id INTEGER,
+                code TEXT,
+                language TEXT,
+                submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (problem_id) REFERENCES problems (id)
+            )
+        ''')
         
         conn.commit()
         print("Tables created or updated successfully")

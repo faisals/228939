@@ -48,6 +48,11 @@
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <h2 class="text-xl font-bold mb-4">Your Solution</h2>
                 <div id="editor" class="mb-4" style="height: 300px; border: 1px solid #ddd;"></div>
+                <select id="language" class="mb-4">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <!-- Add more language options as needed -->
+                </select>
                 <button id="runCode" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
                     Run Code
                 </button>
@@ -111,6 +116,22 @@
                 {% endfor %}
               </div>
 
+              <!-- New section for Submitted Solutions -->
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-bold mb-4">Previous Submissions</h2>
+                {% if submitted_solutions %}
+                    {% for solution in submitted_solutions %}
+                        <div class="mb-4 p-4 bg-gray-100 rounded">
+                            <p><strong>Submitted at:</strong> {{ solution[3] }}</p>
+                            <p><strong>Language:</strong> {{ solution[2] }}</p>
+                            <pre><code>{{ solution[1] }}</code></pre>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No previous submissions.</p>
+                {% endif %}
+            </div>
+
             <!-- You can add Hint History and Conversation History sections here if needed -->
         </div>
     </div>
@@ -118,110 +139,163 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.min.js"></script>
 <script>
-  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
-  require(["vs/editor/editor.main"], function() {
-      var editor = monaco.editor.create(document.getElementById('editor'), {
-          value: '# Write your solution here\n',
-          language: 'python',
-          theme: 'vs-dark'
-      });
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
+require(["vs/editor/editor.main"], function() {
+    var editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '# Write your solution here\n',
+        language: 'python',
+        theme: 'vs-dark'
+    });
 
-      document.getElementById('runCode').addEventListener('click', function() {
-          var code = editor.getValue();
-          fetch('/run_code/{{ problem[0] }}', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({code: code}),
-          })
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('output').textContent = data.output;
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-          });
-      });
+    // Run Code
+    var runCodeButton = document.getElementById('runCode');
+    if (runCodeButton) {
+        runCodeButton.addEventListener('click', function() {
+            var code = editor.getValue();
+            fetch('/run_code/{{ problem[0] }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({code: code}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output').textContent = data.output;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    } else {
+        console.error("Run Code button not found");
+    }
 
-      document.getElementById('submitSolution').addEventListener('click', function() {
-          var code = editor.getValue();
-          // Here you would typically send the code to the server for evaluation
-          console.log("Submitted code:", code);
-          alert("Solution submitted! (This is a placeholder - actual submission not implemented yet)");
-      });
-  });
+    // Get Hint
+    var getHintButton = document.getElementById('getHint');
+    if (getHintButton) {
+        getHintButton.addEventListener('click', function() {
+            fetch('/get_hint/{{ problem[0] }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('hintText').innerHTML = data.hint;
+                    document.getElementById('chatArea').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('hintText').textContent = 'Failed to get hint. Please try again.';
+                });
+        });
+    } else {
+        console.error("Get Hint button not found");
+    }
 
-  document.getElementById('getHint').addEventListener('click', function() {
-      fetch('/get_hint/{{ problem[0] }}')
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('hintText').innerHTML = data.hint;
-              document.getElementById('chatArea').classList.remove('hidden');
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              document.getElementById('hintText').textContent = 'Failed to get hint. Please try again.';
-          });
-  });
+    // Send Message
+    var sendMessageButton = document.getElementById('sendMessage');
+    if (sendMessageButton) {
+        sendMessageButton.addEventListener('click', function() {
+            var message = document.getElementById('userMessage').value;
+            fetch('/chat_with_ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: {{ problem[0] }},
+                    message: message,
+                    hint_type: 'general'
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('hintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
+                document.getElementById('userMessage').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    } else {
+        console.error("Send Message button not found");
+    }
 
-  document.getElementById('sendMessage').addEventListener('click', function() {
-      var message = document.getElementById('userMessage').value;
-      fetch('/chat_with_ai', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              problem_id: {{ problem[0] }},
-              message: message,
-              hint_type: 'general'
-          }),
-      })
-      .then(response => response.json())
-      .then(data => {
-          document.getElementById('hintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
-          document.getElementById('userMessage').value = '';
-      })
-      .catch(error => {
-          console.error('Error:', error);
-      });
-  });
+    // Get Code Hint
+    var getCodeHintButton = document.getElementById('getCodeHint');
+    if (getCodeHintButton) {
+        getCodeHintButton.addEventListener('click', function() {
+            fetch('/get_code_hint/{{ problem[0] }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('codeHintText').innerHTML = data.hint;
+                    document.getElementById('codeChatArea').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('codeHintText').textContent = 'Failed to get code hint. Please try again.';
+                });
+        });
+    } else {
+        console.error("Get Code Hint button not found");
+    }
 
-  document.getElementById('getCodeHint').addEventListener('click', function() {
-      fetch('/get_code_hint/{{ problem[0] }}')
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('codeHintText').innerHTML = data.hint;
-              document.getElementById('codeChatArea').classList.remove('hidden');
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              document.getElementById('codeHintText').textContent = 'Failed to get code hint. Please try again.';
-          });
-  });
+    // Send Code Message
+    var sendCodeMessageButton = document.getElementById('sendCodeMessage');
+    if (sendCodeMessageButton) {
+        sendCodeMessageButton.addEventListener('click', function() {
+            var message = document.getElementById('codeUserMessage').value;
+            fetch('/chat_with_ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: {{ problem[0] }},
+                    message: message,
+                    hint_type: 'code'
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('codeHintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
+                document.getElementById('codeUserMessage').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    } else {
+        console.error("Send Code Message button not found");
+    }
 
-  document.getElementById('sendCodeMessage').addEventListener('click', function() {
-      var message = document.getElementById('codeUserMessage').value;
-      fetch('/chat_with_ai', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              problem_id: {{ problem[0] }},
-              message: message,
-              hint_type: 'code'
-          }),
-      })
-      .then(response => response.json())
-      .then(data => {
-          document.getElementById('codeHintText').innerHTML += '<p><strong>You:</strong> ' + message + '</p><p><strong>AI:</strong> ' + data.response + '</p>';
-          document.getElementById('codeUserMessage').value = '';
-      })
-      .catch(error => {
-          console.error('Error:', error);
-      });
-  });
+    // Submit Solution
+    var submitSolutionButton = document.getElementById('submitSolution');
+    if (submitSolutionButton) {
+        submitSolutionButton.addEventListener('click', function() {
+            var code = editor.getValue();
+            var language = document.getElementById('language').value;
+            fetch('/submit_solution/{{ problem[0] }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({code: code, language: language}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();  // Reload the page to show the new submission
+                } else {
+                    alert('Failed to submit solution: ' + data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    } else {
+        console.error("Submit Solution button not found");
+    }
+});
 </script>
 {% endblock %}

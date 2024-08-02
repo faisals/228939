@@ -103,7 +103,13 @@ def problem_details(problem_id):
         hints = problem_manager.get_hints(problem_id)
         conversations = problem_manager.get_conversations(problem_id)
         recent_attempts = problem_manager.check_attempts(problem_id)
-        return render_template('problem_details.html', problem=problem, hints=hints, conversations=conversations, recent_attempts=recent_attempts)
+        submitted_solutions = problem_manager.get_submitted_solutions(problem_id)
+        return render_template('problem_details.html', 
+                               problem=problem, 
+                               hints=hints, 
+                               conversations=conversations, 
+                               recent_attempts=recent_attempts,
+                               submitted_solutions=submitted_solutions)
     else:
         flash('Problem not found.', 'error')
         return redirect(url_for('index'))
@@ -162,6 +168,19 @@ def update_status(problem_id):
     else:
         flash('Failed to update problem status.', 'error')
     return redirect(url_for('problem_details', problem_id=problem_id))
+
+@app.route('/submit_solution/<int:problem_id>', methods=['POST'])
+def submit_solution(problem_id):
+    code = request.json['code']
+    language = request.json['language']
+    print(f"Submitting solution for problem {problem_id}, language: {language}")
+    solution_id = problem_manager.add_submitted_solution(problem_id, code, language)
+    if solution_id:
+        print(f"Solution submitted successfully, ID: {solution_id}")
+        return jsonify({'success': True, 'message': 'Solution submitted successfully'})
+    else:
+        print("Failed to submit solution")
+        return jsonify({'success': False, 'message': 'Failed to submit solution'})
 
 @app.route('/progress')
 def progress():

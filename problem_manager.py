@@ -355,3 +355,43 @@ class ProblemManager:
         else:
             print("Error! Cannot create the database connection.")
             return False
+        
+    def add_submitted_solution(self, problem_id, code, language):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO submitted_solutions (problem_id, code, language)
+                    VALUES (?, ?, ?)
+                ''', (problem_id, code, language))
+                conn.commit()
+                print(f"Solution added successfully. ID: {cursor.lastrowid}")
+                return cursor.lastrowid
+            except Error as e:
+                print(f"Error adding submitted solution: {e}")
+                print(f"Problem ID: {problem_id}, Language: {language}")
+                print(f"Code: {code[:100]}...")  # Print first 100 characters of code
+            finally:
+                conn.close()
+        else:
+            print("Error! Cannot create the database connection.")
+        return None
+
+    def get_submitted_solutions(self, problem_id):
+        conn = self.create_connection()
+        if conn is not None:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT id, code, language, submitted_at
+                    FROM submitted_solutions
+                    WHERE problem_id = ?
+                    ORDER BY submitted_at DESC
+                ''', (problem_id,))
+                return cursor.fetchall()
+            except Error as e:
+                print(f"Error retrieving submitted solutions: {e}")
+            finally:
+                conn.close()
+        return []
