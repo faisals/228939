@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="7-Day Solana On-Chain Data Curriculum" />
+  <meta name="keywords" content="Solana, Blockchain, Curriculum, Anchor, Program, On-chain data" />
+  <meta name="author" content="Your Name" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7-Day Solana On-Chain Data Curriculum (2024/2025)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 900px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #0b3d91;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h2 {
+      margin-top: 40px;
+    }
+    hr {
+      margin: 40px 0;
+    }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .exercise {
+      background: #f9fafb;
+      border-left: 4px solid #0b3d91;
+      padding: 10px 20px;
+      margin: 20px 0;
+    }
+    .exercise h4 {
+      margin: 0 0 10px 0;
+      color: #0b3d91;
+    }
+    .footer {
+      margin-top: 60px;
+      font-size: 0.9em;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<h1>7-Day Solana On-Chain Data Curriculum (2024/2025)</h1>
+
+<p>
+This curriculum is designed for an intensive 7-day, 8-hour-per-day learning
+experience. The goal is to become proficient in programmatic interaction with
+the Solana blockchain, including writing and deploying on-chain programs using
+the Anchor framework. Each day includes key topics, hands-on exercises, and
+practical insights for mastering on-chain data.
+</p>
+
+<hr />
+
+<!-- Day 1 -->
+<h2>Day 1: Fundamentals of Solana &amp; Environment Setup</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Understand the basic concepts of Solana (Proof of History, architecture, validators, cluster types).</li>
+  <li>Install and configure development tools (Rust, Solana CLI, Anchor CLI).</li>
+  <li>Familiarize yourself with key Solana CLI commands.</li>
+  <li>Write a simple script to interact with the Solana blockchain (fetch wallet balance).</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Solana Basics (2 hours)</strong><br />
+    <ul>
+      <li>How Solana processes transactions (Proof of History &amp; Tower BFT overview).</li>
+      <li>Cluster types: Devnet, Testnet, Mainnet-beta, and Localnet.</li>
+      <li>Key pairs, wallets, and addresses.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Development Environment Setup (1 hour)</strong><br />
+    <ul>
+      <li>Install Rust &amp; set up the Rust toolchain (Nightly may be needed for Anchor).</li>
+      <li>Install the Solana CLI tools (<code>solana --version</code>).</li>
+      <li>Install Anchor CLI (<code>anchor --version</code>).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Solana CLI Crash Course (2 hours)</strong><br />
+    <ul>
+      <li>Generating keypairs (<code>solana-keygen new</code>).</li>
+      <li>Requesting airdrops on devnet (<code>solana airdrop</code>).</li>
+      <li>Checking balances and transaction history.</li>
+      <li>Transferring SOL between accounts.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Intro to Programmatic Interaction (2 hours)</strong><br />
+    <ul>
+      <li>Basic example in Python or TypeScript using <code>@solana/web3.js</code> or <code>solana-py</code>.</li>
+      <li>Connecting to devnet and fetching wallet balance programmatically.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 1)</h4>
+  <p><strong>Goal:</strong> Write a short script to fetch and display your wallet’s balance programmatically.</p>
+  <ul>
+    <li>Create or import a keypair for devnet.</li>
+    <li>Airdrop some SOL to your devnet wallet (<code>solana airdrop</code>).</li>
+    <li>In Python or TypeScript, connect to devnet and retrieve your wallet’s balance.</li>
+    <li>Print the balance to the console.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 2 -->
+<h2>Day 2: Solana Transaction Model &amp; Reading On-Chain Data</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Deeply understand Solana transactions and instructions.</li>
+  <li>Learn how to decode transaction data.</li>
+  <li>Explore how on-chain accounts store and structure data.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Transaction &amp; Instruction Model (2 hours)</strong><br />
+    <ul>
+      <li>Anatomy of a transaction: signatures, message, instructions, recent blockhash.</li>
+      <li>Role of signers vs. read-only accounts in transactions.</li>
+      <li>Fee structure on Solana.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Reading Transaction History (2 hours)</strong><br />
+    <ul>
+      <li>Using the Solana CLI to fetch transaction details.</li>
+      <li>Using <code>@solana/web3.js</code> or <code>solana-py</code> to query recent transactions.</li>
+      <li>Decoding transaction logs and events.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Accounts &amp; Data Storage (2 hours)</strong><br />
+    <ul>
+      <li>Solana accounts model: rent, data size, ownership.</li>
+      <li>Program Derived Addresses (PDAs) introduction (briefly – deeper dive on Day 4).</li>
+      <li>Common pitfalls in storing data on-chain (rent-exempt rules, etc.).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Practical Examples (1 hour)</strong><br />
+    <ul>
+      <li>Walk through real transactions in the Solana Explorer.</li>
+      <li>Decode instructions from a popular protocol (e.g., a DEX transaction).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 2)</h4>
+  <p><strong>Goal:</strong> Create a script that fetches and decodes transaction data for a specific address.</p>
+  <ul>
+    <li>Pick a public program or your own devnet address with recent transactions.</li>
+    <li>Fetch the transaction signatures for the last <em>N</em> transactions.</li>
+    <li>Decode each transaction to show signatures, involved accounts, logs or events.</li>
+    <li>Print results to the console in a readable format.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 3 -->
+<h2>Day 3: Introduction to Writing Solana Programs (Anchor Framework)</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Understand the structure of a Solana program (smart contract) in Rust.</li>
+  <li>Set up and use the Anchor framework for streamlined development.</li>
+  <li>Create, build, and deploy your first Solana program to devnet.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Why Anchor? (1 hour)</strong><br />
+    <ul>
+      <li>Overview of Anchor’s features: <code>#[derive(Accounts)]</code>, macros, PDAs, error handling.</li>
+      <li>Comparison to raw Solana program development in Rust.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Project Structure &amp; Anchor Basics (2 hours)</strong><br />
+    <ul>
+      <li>Anchor CLI commands (<code>anchor init</code>, <code>anchor build</code>, <code>anchor deploy</code>).</li>
+      <li>Anatomy of an Anchor program: <code>lib.rs</code>, <code>Cargo.toml</code>, IDL generation.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Writing a Simple “Hello World” Program (2 hours)</strong><br />
+    <ul>
+      <li>Define a context struct and handler function.</li>
+      <li>Understand how accounts are passed into the program.</li>
+      <li>Build and deploy to devnet.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Interacting with the Program (2 hours)</strong><br />
+    <ul>
+      <li>Using Anchor tests or a simple client script to send transactions.</li>
+      <li>Verifying logs in the Solana Explorer or using <code>solana logs</code>.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 3)</h4>
+  <p><strong>Goal:</strong> Build and deploy a simple “Hello World” Anchor program.</p>
+  <ul>
+    <li>Create a new Anchor project with <code>anchor init hello_world</code>.</li>
+    <li>Modify the program to store a simple string or counter in an account.</li>
+    <li>Deploy the program to devnet.</li>
+    <li>Write a test (JavaScript/TypeScript or Rust) that calls the program’s method to update on-chain data (e.g., increment a counter).</li>
+    <li>Confirm the state changes on-chain by checking the account data with your client script.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 4 -->
+<h2>Day 4: Advanced Data Handling: PDAs, Seeds, and Complex Data Structures</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Master the use of Program Derived Addresses (PDAs) and seeds.</li>
+  <li>Learn how to design and store complex data structures in accounts.</li>
+  <li>Understand account constraints, security checks, and best practices.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Deeper Dive into PDAs (2 hours)</strong><br />
+    <ul>
+      <li>Why PDAs are secure (Ed25519 point off the curve).</li>
+      <li>Seeds and bumps.</li>
+      <li>Common patterns for generating PDAs (e.g., for user profiles, “vault” accounts).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Complex Data Serialization (2 hours)</strong><br />
+    <ul>
+      <li>Using Anchor’s <code>#[account]</code> macro to define data schemas.</li>
+      <li>Handling vectors, maps, or advanced data structures.</li>
+      <li>Memory and rent considerations for large accounts.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Program Constraints &amp; Security (2 hours)</strong><br />
+    <ul>
+      <li>Anchor’s constraint system (e.g., <code>#[account(mut, has_one = authority)]</code>).</li>
+      <li>Preventing data tampering and ensuring only valid signers can modify data.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Hands-On Examples (1 hour)</strong><br />
+    <ul>
+      <li>Creating multiple PDAs for different user states or items in a game/market.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 4)</h4>
+  <p><strong>Goal:</strong> Create a program that uses PDAs to manage multiple user data accounts.</p>
+  <ul>
+    <li>Define a <code>UserProfile</code> structure (e.g., <code>username</code>, <code>reputation</code>, etc.).</li>
+    <li>Use a PDA to derive a unique address for each user’s profile.</li>
+    <li>Write instructions to create and update these user profiles.</li>
+    <li>From a client script, create a profile and then update it with mock data.</li>
+    <li>Confirm each user’s data is stored in a separate PDA and verify the on-chain data.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 5 -->
+<h2>Day 5: Indexing and Off-Chain Data Pipelines</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Understand how to index on-chain events and account data for scalable dApps.</li>
+  <li>Explore existing indexing solutions (Helius, LogSnag, or custom event listeners).</li>
+  <li>Build a small indexing service to watch a program’s data changes.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Introduction to Indexing (2 hours)</strong><br />
+    <ul>
+      <li>Why indexing is necessary (real-time dashboards, analytics, etc.).</li>
+      <li>Event vs. polling approaches.</li>
+      <li>Webhooks, WebSockets, or RPC-based polling.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Existing Tools &amp; Services (1 hour)</strong><br />
+    <ul>
+      <li>Helius, LogSnag, or other third-party indexing solutions.</li>
+      <li>Building a custom indexer using a local database (e.g., PostgreSQL).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Implementing a Custom Indexer (3 hours)</strong><br />
+    <ul>
+      <li>Listening for program events/logs.</li>
+      <li>Decoding events using your program’s IDL (Anchor).</li>
+      <li>Storing relevant data in an off-chain database.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Hands-On with an Indexer (1 hour)</strong><br />
+    <ul>
+      <li>Connect a Node.js/Python script that fetches logs/events for your Day 4 program.</li>
+      <li>Show real-time updates whenever a user updates their profile.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 5)</h4>
+  <p><strong>Goal:</strong> Build a basic indexer service that listens for user profile changes in your Day 4 program.</p>
+  <ul>
+    <li>Create a Node.js or Python service that checks for new transactions involving your program’s ID (polling or WebSocket).</li>
+    <li>Decode relevant logs or events (e.g., “ProfileUpdated”) and store them in a local/cloud DB.</li>
+    <li>Create a simple dashboard (command-line or web-based) to display the recorded profiles and changes in real time.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 6 -->
+<h2>Day 6: Debugging, Testing, and Performance</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Learn best practices for debugging Solana programs and transactions.</li>
+  <li>Understand how to write comprehensive tests for your Solana programs.</li>
+  <li>Explore performance considerations and optimization techniques.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Debugging Techniques (2 hours)</strong><br />
+    <ul>
+      <li>Using <code>solana logs</code> and Anchor’s <code>simulate</code> feature.</li>
+      <li>Common runtime errors and how to fix them (e.g., <em>AccountNotEnoughKeys</em>, <em>InstructionError</em>).</li>
+      <li>Reading program logs in the Explorer vs. local environment.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Testing Strategies (2 hours)</strong><br />
+    <ul>
+      <li>Anchor’s built-in testing environment (<code>anchor test</code>).</li>
+      <li>Integrating with Mocha/Jest (for TypeScript-based tests).</li>
+      <li>Local test scenarios with <code>solana-test-validator</code>.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Performance &amp; Concurrency (2 hours)</strong><br />
+    <ul>
+      <li>Solana’s parallel execution model (accounts-based concurrency).</li>
+      <li>Minimizing account data size and transaction overhead.</li>
+      <li>Rent optimization (closing unused accounts).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Hands-On Debugging &amp; Optimization (2 hours)</strong><br />
+    <ul>
+      <li>Intentionally break a transaction and diagnose the error.</li>
+      <li>Optimize user profile program from Day 4 to reduce transaction/account size.</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 6)</h4>
+  <p><strong>Goal:</strong> Debug a failing transaction in your program and then improve performance.</p>
+  <ul>
+    <li>Modify your Day 4 program so an instruction fails intentionally (e.g., incorrect account constraints).</li>
+    <li>Run a transaction that triggers the failure; capture logs and error messages.</li>
+    <li>Fix the bug, confirm the transaction now succeeds.</li>
+    <li>Try to reduce account/data footprint to optimize rent costs. Document changes.</li>
+  </ul>
+</div>
+
+<hr />
+
+<!-- Day 7 -->
+<h2>Day 7: Final Project &amp; Expert-Level Topics</h2>
+
+<h3>Learning Goals</h3>
+<ul>
+  <li>Integrate everything learned into a full dApp workflow.</li>
+  <li>Explore advanced Solana features (CPI calls, cross-program interactions, zero-copy deserialization).</li>
+  <li>Complete an end-to-end project demonstrating mastery of on-chain data handling.</li>
+</ul>
+
+<h3>Topics to Cover (Approx. 8 hours)</h3>
+<ol>
+  <li>
+    <strong>Cross-Program Invocations (CPI) &amp; Composability (2 hours)</strong><br />
+    <ul>
+      <li>Calling into other programs (e.g., token program, associated token program).</li>
+      <li>Using CPIs to extend your program’s functionality.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Zero-Copy Deserialization &amp; Other Advanced Techniques (1 hour)</strong><br />
+    <ul>
+      <li>Reducing serialization overhead in performance-critical apps.</li>
+      <li>Creating slices of account data for partial updates.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Security &amp; Auditing (1 hour)</strong><br />
+    <ul>
+      <li>Common Solana security pitfalls.</li>
+      <li>Tools and best practices for auditing code.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Final Project Overview (2 hours)</strong><br />
+    <ul>
+      <li>Brainstorm a real-world application to build or extend in ~1 day.</li>
+      <li>Outline a minimal end-to-end solution: on-chain program + indexer + front-end or CLI.</li>
+      <li>Implementation plan (account structure, instructions, off-chain data pipeline).</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Project Work (1-2 hours)</strong><br />
+    <ul>
+      <li>Begin coding your final project or setting up the skeleton.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Wrap-up &amp; Q&amp;A (1 hour)</strong>
+  </li>
+</ol>
+
+<div class="exercise">
+  <h4>Exercise (Day 7) &ndash; Final Project</h4>
+  <p><strong>Goal:</strong> Combine all learnings into one final dApp or advanced script.</p>
+  <ul>
+    <li>
+      <strong>Example Project: “Distributed Marketplace”</strong>
+      <ul>
+        <li><em>On-chain:</em> A program that lets users list items (data structures) with metadata and a price.</li>
+        <li><em>PDAs:</em> Each item is stored in a PDA.</li>
+        <li><em>CPI:</em> Optional use of the SPL Token program to accept custom token payments.</li>
+        <li><em>Off-chain Indexer:</em> Watch for new item listings and store them for fast querying.</li>
+        <li><em>Front-end/CLI:</em> Minimal interface to display and “purchase” items.</li>
+      </ul>
+    </li>
+    <li>Adjust scope or choose a different project (the key is demonstrating the full flow).</li>
+  </ul>
+</div>
+
+<hr />
+
+<h2>Additional Tips &amp; Resources</h2>
+<ul>
+  <li>
+    <strong>Solana Documentation</strong><br />
+    <a href="https://docs.solana.com/" target="_blank">Solana Docs</a> &ndash; Official reference for core concepts.
+  </li>
+  <li>
+    <strong>Anchor Book</strong><br />
+    <a href="https://www.anchor-lang.com/docs" target="_blank">Anchor Docs</a> &ndash; Detailed reference for macros, testing, patterns.
+  </li>
+  <li>
+    <strong>Community &amp; Support</strong><br />
+    - <a href="https://discord.com/invite/solana" target="_blank">Solana Discord</a> &ndash; Developer community and help.<br />
+    - <a href="https://solana.stackexchange.com/" target="_blank">Solana Stack Exchange</a> &ndash; Q&amp;A for Solana-specific development.
+  </li>
+  <li>
+    <strong>Continuous Learning</strong><br />
+    Stay updated on new versions of Solana, Rust, Anchor, and explore advanced patterns (streaming payments, dynamic NFT metadata, zero-knowledge integration, etc.).
+  </li>
+</ul>
+
+<p class="footer">
+  &copy; 2024/2025 - Your Name or Organization. All rights reserved.
+</p>
+
+</body>
+</html>
